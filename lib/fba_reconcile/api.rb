@@ -21,21 +21,12 @@ module Request
 		@mws_api = mws_api
 		response = mws_api.reports.request_report("ReportType" => "_GET_AFN_INVENTORY_DATA_").parsed_response
 		@request_id = Tools.find(response, "ReportRequestId")
-		puts response_id
-		check_report_status
 	end
 
 	# Checks status of report with request id generated in previous request
-	def self.check_report_status
+	def self.retrieve_report_list
 		status = @mws_api.reports.get_report_list.parsed_response
 		report_list = Tools.find(status, "ReportInfo")
-		puts report_list
-		@report_id = extract_report_id(report_list)
-	end
-
-	# Extracts report ID
-	def self.extract_report_id(report_list)
-		report_list.map { |report| report["ReportId"] if report["ReportRequestId"] == @request_id }.compact[0]
 	end
 
 	def self.retrieve_report(request_id)
