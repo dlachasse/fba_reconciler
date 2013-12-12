@@ -1,5 +1,15 @@
-require "fba_reconcile/version"
+require 'tiny_tds'
+require 'mws-rb'
+require 'yaml'
 
-module FbaReconcile
-  # Your code goes here...
+require_relative 'fba_reconcile/api'
+require_relative 'fba_reconcile/fba'
+require_relative 'fba_reconcile/database'
+require_relative 'fba_reconcile/version'
+
+# load config params
+CFG = YAML::load_file(File.join(File.expand_path(".."), "config.yml"))
+
+module FBAReconcile
+	FBA.new
 end
