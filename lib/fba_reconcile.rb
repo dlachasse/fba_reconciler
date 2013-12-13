@@ -11,5 +11,6 @@ require_relative 'fba_reconcile/version'
 CFG = YAML::load_file(File.join(File.expand_path(".."), "config.yml"))
 
 module FBAReconcile
-	FBA.new
+	mws = Connection.connect("hive")
+	FBA.new(mws)
 end

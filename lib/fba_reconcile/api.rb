@@ -17,21 +17,19 @@ end
 module Request
 
 	# Returns id of request for later use
-	def self.request_report(mws_api)
-		@mws_api = mws_api
-		response = mws_api.reports.request_report("ReportType" => "_GET_AFN_INVENTORY_DATA_").parsed_response
+	def self.request_report(mws)
+		response = mws.reports.request_report("ReportType" => "_GET_AFN_INVENTORY_DATA_").parsed_response
 		@request_id = Tools.find(response, "ReportRequestId")
 	end
 
 	# Checks status of report with request id generated in previous request
-	def self.retrieve_report_list
-		status = @mws_api.reports.get_report_list.parsed_response
+	def self.retrieve_report_list(mws)
+		status = mws.reports.get_report_list.parsed_response
 		report_list = Tools.find(status, "ReportInfo")
 	end
 
-	def self.retrieve_report(request_id)
-		report_id = check_report(request_id)
-		report = @mws_api.reports.request_report("ReportId" => report_id)
+	def self.retrieve_report(mws, report_id)
+		mws.reports.request_report("ReportId" => report_id)
 	end
 
 end
