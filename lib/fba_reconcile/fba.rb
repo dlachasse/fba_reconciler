@@ -3,11 +3,10 @@ require 'time'
 require_relative './api'
 
 class FBA
-	include Connection
-	include Request
 
-	def initialize(mws)
-		@mws = mws
+	attr_accessor :mws
+
+	def initialize
 		get_report_list
 		check_for_recent_request
 	end
@@ -29,7 +28,7 @@ class FBA
 	end
 
 	def request
-		@request_id = Request.request_report(@mws)
+		@request_id = Request.new("hive", :request_report)
 		p @request_id
 		@report_list = get_report_list
 		p @report_list
@@ -39,7 +38,7 @@ class FBA
 	end
 
 	def get_report_list
-		@report_list = Request.retrieve_report_list(@mws)
+		@report_list = Request.new("hive", :retrieve_report_list)
 	end
 
 	def report_id
@@ -64,7 +63,7 @@ class FBA
 		  p "Not acknowledged :: Recheck"
 		  get_report_list
 		end
-		p Request.retrieve_report(@mws, @report_id)
+		p Request.new("hive", :retrieve_report)
 	end
 
 	def to_bool(str)
