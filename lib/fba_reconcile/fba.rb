@@ -1,44 +1,51 @@
 require 'time'
 
 require_relative './api'
+require_relative './writer'
 
 class FBA
 
 	attr_accessor :mws
 
 	def initialize
+		start_connection
 		get_report_list
 		check_for_recent_request
 	end
 
+	def start_connection
+		connection = Request.new(:connect)
+		@@mws = connection.mws
+	end
+
 	def check_for_recent_request
 		last_report = extract_report_item("ReportType", "_GET_AFN_INVENTORY_DATA_")
-		if recent_usable_report?
+		if last_report.nil?
+			request
+		elsif recent_usable_report? last_report
 			@request_id = last_report["ReportRequestId"]
 			@report_id = last_report["ReportId"]
-			retrieve_report_output
-		else
-			request
+			retreive_report
 		end
 	end
 
-	def recent_usable_report?
+	def recent_usable_report? last_report
+		puts "Last Report returning: #{last_report}"
 		time_at_last_report = Time.parse(last_report["AvailableDate"])
 		(Time.now - time_at_last_report).to_i < 3600 ? true : false
 	end
 
 	def request
-		@request_id = Request.new("hive", :request_report)
-		p @request_id
+		request = Request.new(:request_report)
+		@request_id = request.request_id
 		@report_list = get_report_list
-		p @report_list
 		@report_id = report_id
-		p @report_id
-		retrieve_report_output
+		wait_til_acknowledged
 	end
 
 	def get_report_list
-		@report_list = Request.new("hive", :retrieve_report_list)
+		request = Request.new(:retrieve_report_list)
+		@report_list = request.report_list
 	end
 
 	def report_id
@@ -53,17 +60,18 @@ class FBA
 
 	# Extracts report values
 	def extract_report_item(parameter, value, item=nil)
-		@report_list.map { |report| report if report[] == value }.compact[0]
+		output = @report_list.map { |report| report if report[parameter] == value }.compact[0]
+		puts "Ouput returned: #{output}"
 		item ? output[item] : output
 	end
 
-	def retrieve_report_output
+	def wait_til_acknowledged
 		until acknowledged?
 		  sleep(180)
 		  p "Not acknowledged :: Recheck"
 		  get_report_list
 		end
-		p Request.new("hive", :retrieve_report)
+		retreive_report
 	end
 
 	def to_bool(str)
@@ -72,5 +80,20 @@ class FBA
 
     raise ArgumentError.new "invalid value: #{str}"
   end
+
+  def retreive_report
+  	request = Request.new(:retrieve_report, { variable: "@report_id", value: @report_id })
+		write_out_file(request.report.parsed_response)
+	end
+
+	def format_data(data)
+		data.gsub!("\r\n", "\n").gsub!("\t", ",")
+	end
+
+	def write_out_file(data)
+		data = format_data(data)
+		output = File.open("afn.csv", "w+")
+		output.puts data
+	end
 
 end
