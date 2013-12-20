@@ -1,7 +1,6 @@
 require 'time'
 
 require_relative './api'
-require_relative './writer'
 
 class FBA
 

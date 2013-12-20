@@ -11,6 +11,19 @@ class Database
 	end
 
 	def self.query
+		@client = connect
+		sql = "SELECT LocalSKU, Text1 AS FBA, QOH
+		FROM [SE Data].[dbo].[Inventory]
+			WHERE Category = 'Licensed Shirts'"
+		@client.execute sql
+	end
+
+	def self.update(sku, fba)
+
+		@client = connect
+		sql = "UPDATE [SE Data].[dbo].[Inventory]
+		SET Text1 = #{fba}
+		WHERE LocalSKU = #{sku}"
 
 	end
 
