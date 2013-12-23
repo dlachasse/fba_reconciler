@@ -34,8 +34,7 @@ class Processor
 	end
 
 	def update_sql(value)
-		puts "UPDATE #{@sku} :: #{value}" if check_current
-		# Database.update(@sku, value) if check_current
+		Database.update(@sku, value) if check_current
 	end
 
 	def check_current

@@ -19,12 +19,13 @@ class Database
 	end
 
 	def self.update(sku, fba)
-
 		@client = connect
 		sql = "UPDATE [SE Data].[dbo].[Inventory]
-		SET Text1 = #{fba}
-		WHERE LocalSKU = #{sku}"
-
+			SET Text1 = #{fba}
+			WHERE LocalSKU = #{sku}"
+		result = @client.execute sql
+		result.do
+		puts "UPDATED :: #{sku} to #{fba}"
 	end
 
 end

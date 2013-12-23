@@ -14,7 +14,7 @@ CFG = YAML::load_file(File.join(File.expand_path(".."), "config.yml"))
 
 module FBAReconcile
 
-	# FBA.new
+	FBA.new unless FBA.recent_report_downloaded?
 	Processor.new
 
 end

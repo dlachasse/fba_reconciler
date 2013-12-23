@@ -25,13 +25,15 @@ class FBA
 			@request_id = last_report["ReportRequestId"]
 			@report_id = last_report["ReportId"]
 			retreive_report
+		else
+			request
 		end
 	end
 
 	def recent_usable_report? last_report
 		puts "Last Report returning: #{last_report}"
-		time_at_last_report = Time.parse(last_report["AvailableDate"])
-		(Time.now - time_at_last_report).to_i < 3600 ? true : false
+		time_at_last_report = Time.parse(last_report["AvailableDate"]).utc
+		(Time.now.utc - time_at_last_report).to_i < 2700 ? true : false
 	end
 
 	def request
@@ -53,32 +55,26 @@ class FBA
 
 	def acknowledged?
 		output = extract_report_item("ReportRequestId", @request_id, "Acknowledged")
-		p output
-		to_bool(output)
+		Time.now.utc > Time.parse(output).utc ? true : false
 	end
 
 	# Extracts report values
 	def extract_report_item(parameter, value, item=nil)
 		output = @report_list.map { |report| report if report[parameter] == value }.compact[0]
-		puts "Ouput returned: #{output}"
+		puts "Extracting #{parameter} returned: #{output}"
 		item ? output[item] : output
+	rescue NoMethodError
+		puts "No object was sent"
 	end
 
 	def wait_til_acknowledged
 		until acknowledged?
-		  sleep(180)
 		  p "Not acknowledged :: Recheck"
+		  sleep(180)
 		  get_report_list
 		end
 		retreive_report
 	end
-
-	def to_bool(str)
-    return true if str =~ (/^(true|t|yes|y|1)$/i)
-    return false if str =~ (/^(false|f|no|n|0)$/i) || str.nil?
-
-    raise ArgumentError.new "invalid value: #{str}"
-  end
 
   def retreive_report
   	request = Request.new(:retrieve_report, { variable: "@report_id", value: @report_id })
@@ -93,6 +89,10 @@ class FBA
 		data = format_data(data)
 		output = File.open("afn.csv", "w+")
 		output.puts data
+	end
+
+	def self.recent_report_downloaded?
+		(Time.now.utc - File.mtime('afn.csv').utc).to_i < 2700
 	end
 
 end
