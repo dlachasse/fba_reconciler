@@ -10,11 +10,13 @@ require_relative 'fba_reconcile/database'
 require_relative 'fba_reconcile/version'
 
 # load config params
-CFG = YAML::load_file(File.join(File.expand_path(".."), "config.yml"))
+CFG = YAML::load_file(File.join(File.expand_path("./"), "config.yml"))
 
 module FBAReconcile
 
-	FBA.new unless FBA.recent_report_downloaded?
-	Processor.new
+	def self.start
+		FBA.new unless FBA.recent_report_downloaded?
+		Processor.new
+	end
 
 end

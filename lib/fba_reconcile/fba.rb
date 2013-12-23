@@ -92,7 +92,7 @@ class FBA
 	end
 
 	def self.recent_report_downloaded?
-		(Time.now.utc - File.mtime('afn.csv').utc).to_i < 2700
+		(Time.now.utc - File.mtime(File.join(File.expand_path("./lib/"), 'afn.csv')).utc).to_i < 2700
 	end
 
 end
