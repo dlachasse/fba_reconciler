@@ -54,7 +54,7 @@ class FBA
 	end
 
 	def acknowledged?
-		output = extract_report_item("ReportRequestId", @request_id, "Acknowledged")
+		output = extract_report_item("ReportId", @report_id, "Acknowledged")
 		Time.now.utc > Time.parse(output).utc ? true : false
 	end
 
