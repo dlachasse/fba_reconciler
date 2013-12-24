@@ -64,7 +64,7 @@ class FBA
 		puts "Extracting #{parameter} returned: #{output}"
 		item ? output[item] : output
 	rescue NoMethodError
-		puts "No object was sent"
+		puts "No object was returned"
 	end
 
 	def wait_til_acknowledged
