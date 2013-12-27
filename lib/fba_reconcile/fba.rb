@@ -21,7 +21,7 @@ class FBA
 		last_report = extract_report_item("ReportType", "_GET_AFN_INVENTORY_DATA_")
 		if last_report.nil?
 			request
-		elsif recent_usable_report? last_report
+		elsif useable_report? last_report
 			@request_id = last_report["ReportRequestId"]
 			@report_id = last_report["ReportId"]
 			retreive_report
@@ -30,9 +30,8 @@ class FBA
 		end
 	end
 
-	def recent_usable_report? last_report
-		puts "Last Report returning: #{last_report}"
-		time_at_last_report = Time.parse(last_report["AvailableDate"]).utc
+	def useable_report? report
+		time_at_last_report = Time.parse(report["AvailableDate"]).utc
 		(Time.now.utc - time_at_last_report).to_i < 2700 ? true : false
 	end
 
@@ -41,7 +40,10 @@ class FBA
 		@request_id = request.request_id
 		@report_list = get_report_list
 		@report_id = report_id
-		wait_til_acknowledged
+		puts "Report generated:
+			REQUEST_ID: #{@request_id}
+			REPORT_ID: #{@report_id}"
+		wait_til_usable_report
 	end
 
 	def get_report_list
@@ -53,23 +55,18 @@ class FBA
 		extract_report_item("ReportRequestId", @request_id, "ReportId")
 	end
 
-	def acknowledged?
-		output = extract_report_item("ReportId", @report_id, "Acknowledged")
-		Time.now.utc > Time.parse(output).utc ? true : false
-	end
-
 	# Extracts report values
 	def extract_report_item(parameter, value, item=nil)
 		output = @report_list.map { |report| report if report[parameter] == value }.compact[0]
 		puts "Extracting #{parameter} returned: #{output}"
-		item ? output[item] : output
+		item.nil? ? output : output[item]
 	rescue NoMethodError
 		puts "No object was returned"
 	end
 
-	def wait_til_acknowledged
-		until acknowledged?
-		  p "Not acknowledged :: Recheck"
+	def wait_til_usable_report
+		until useable_report?
+		  p "Not ready :: Recheck"
 		  sleep(180)
 		  get_report_list
 		end
