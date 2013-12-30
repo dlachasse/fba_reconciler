@@ -18,19 +18,24 @@ class FBA
 	end
 
 	def check_for_recent_request
-		last_report = extract_report_item("ReportType", "_GET_AFN_INVENTORY_DATA_")
-		if last_report.nil?
+		get_last_report
+		if @last_report.nil?
 			request
-		elsif useable_report? last_report
-			@request_id = last_report["ReportRequestId"]
-			@report_id = last_report["ReportId"]
+		elsif useable_report? @last_report
+			@request_id = @last_report["ReportRequestId"]
+			@report_id = @last_report["ReportId"]
 			retreive_report
 		else
 			request
 		end
 	end
 
+	def get_last_report
+		@last_report = extract_report_item("ReportType", "_GET_AFN_INVENTORY_DATA_")
+	end
+
 	def useable_report? report
+		return false if report.nil?
 		time_at_last_report = Time.parse(report["AvailableDate"]).utc
 		(Time.now.utc - time_at_last_report).to_i < 2700 ? true : false
 	end
@@ -40,9 +45,6 @@ class FBA
 		@request_id = request.request_id
 		@report_list = get_report_list
 		@report_id = report_id
-		puts "Report generated:
-			REQUEST_ID: #{@request_id}
-			REPORT_ID: #{@report_id}"
 		wait_til_usable_report
 	end
 
@@ -65,7 +67,7 @@ class FBA
 	end
 
 	def wait_til_usable_report
-		until useable_report?
+		until useable_report? get_last_report
 		  p "Not ready :: Recheck"
 		  sleep(180)
 		  get_report_list
@@ -84,7 +86,7 @@ class FBA
 
 	def write_out_file(data)
 		data = format_data(data)
-		output = File.open("afn.csv", "w+")
+		output = File.open(File.join(File.expand_path("./"), "afn.csv"), "w+")
 		output.puts data
 	end
 
