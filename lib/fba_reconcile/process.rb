@@ -34,10 +34,10 @@ class Processor
 	end
 
 	def update_sql(value)
-		Database.update(@sku, value) if check_current
+		Database.update(@sku, value) if currently_stocked?
 	end
 
-	def check_current
+	def currently_stocked?
 		begin
 			currently = @local_inventory.fetch(@sku)
 			currently["FBA"] == "Yes" ? true : false
