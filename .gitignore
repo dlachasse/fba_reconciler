@@ -19,3 +19,8 @@ config.yml
 lib/afn.csv
 afn.csv
 schedule.bat
+recommendations_inventory.txt
+recommendations_selection.txt
+recommendations_pricing.txt
+recommendations_fulfillment.txt
+recommendations_listingquality.txt
