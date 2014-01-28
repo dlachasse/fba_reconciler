@@ -37,6 +37,10 @@ class Request
 		@report = @@mws.reports.get_report("ReportId" => @report_id)
 	end
 
+	def request_recommendations
+		@@mws.recommendations.list_recommendations("MarketplaceId" => CFG["hive"]["marketplace_id"], "RecommendationCategory" => @recommendation_category).parsed_response
+	end
+
 end
 
 
