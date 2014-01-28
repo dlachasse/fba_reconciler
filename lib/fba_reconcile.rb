@@ -18,7 +18,7 @@ module FBAReconcile
 		%w(Inventory Selection Pricing Fulfillment ListingQuality).each do |cat|
 			recs = Request.new(:connect, variable: "@recommendation_category", value: cat)
 			data = recs.request_recommendations
-			f = File.new("./recommendations_#{cat.downcase}.txt", "w+")
+			f = File.new("./recommendations_#{cat.downcase}.xml", "w+")
 			f.puts data.to_xml(root: 'ListRecommendationsResult')
 		end
 	end
