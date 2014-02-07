@@ -6,7 +6,7 @@ class Request
 	attr_accessor :mws, :request_id, :report_list, :report
 
 	def initialize(method,opts={})
-		instance_variable_set(opts[:variable], opts[:value]) unless opts[:variable].nil?
+		@opts = opts
 		send(method)
 	end
 
@@ -22,7 +22,7 @@ class Request
 
 	# Returns id of request for later use
 	def request_report
-		response = @@mws.reports.request_report("ReportType" => "_GET_AFN_INVENTORY_DATA_").parsed_response
+		response = @@mws.reports.request_report("ReportType" => @opts[:report_type]).parsed_response
 		@request_id = Tools.find(response, "ReportRequestId")
 	end
 
@@ -34,11 +34,11 @@ class Request
 	end
 
 	def retrieve_report
-		@report = @@mws.reports.get_report("ReportId" => @report_id)
+		@report = @@mws.reports.get_report("ReportId" => @opts[:report_id])
 	end
 
 	def request_recommendations
-		@@mws.recommendations.list_recommendations("MarketplaceId" => CFG["hive"]["marketplace_id"], "RecommendationCategory" => @recommendation_category).parsed_response
+		@@mws.recommendations.list_recommendations("MarketplaceId" => CFG[@opts[:market]]["marketplace_id"], "RecommendationCategory" => @opts[:recommendation_category]).parsed_response
 	end
 
 end
