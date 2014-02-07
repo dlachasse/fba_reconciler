@@ -16,15 +16,15 @@ module FBAReconcile
 
 	def self.recs
 		%w(Inventory Selection Pricing Fulfillment ListingQuality).each do |cat|
-			recs = Request.new(:connect, variable: "@recommendation_category", value: cat)
+			recs = Request.new(:connect, { recommendation_category: cat })
 			data = recs.request_recommendations
 			f = File.new("./recommendations_#{cat.downcase}.xml", "w+")
 			f.puts data.to_xml(root: 'ListRecommendationsResult')
 		end
 	end
 
-	def self.start
-		FBA.new unless FBA.recent_report_downloaded?
+	def self.start(report_type)
+		FBA.new(report_type)
 		Processor.new
 	end
 
