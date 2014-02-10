@@ -1,49 +1,51 @@
 require 'csv'
 
-class Processor
+module Processor
 
-	def initialize
-		@afn_inventory, @local_inventory = Hash.new, Hash.new
-		open_file
-		local_listings
-		sync
-	end
+	class Status
 
-	def open_file
-		CSV.foreach("afn.csv", headers: true, header_converters: :symbol) do |row|
-			@afn_inventory.merge!(row[:sellersku] => row[:quantity_available].to_i)
+		def initialize(report_type)
+			@report_type = report_type
+			@file = File.join("./tmp/", @report_type + ".csv")
 		end
-	end
 
-	def local_listings
-		results = Database.query
-		results.each do |row|
-			@local_inventory.merge!(row["LocalSKU"] => { "FBA" => row["FBA"], "Quantity" => row["QOH"] })
+		def build
+			get_sku_column_name
+			prep_table
+			build_query_from_item_hash
+			Database.merge_temp_and_stored_fba_table
 		end
-	end
 
-	def sync
-		@afn_inventory.each_pair do |sku, qty|
-			@sku = sku
-			operate(qty)
+		def scan_headers
+			File.open(@file, &:readline)
 		end
-	end
 
-	def operate(qty)
-		qty.zero? ? update_sql("No") : update_sql("Yes")
-	end
-
-	def update_sql(value)
-		Database.update(@sku, value) if currently_stocked?
-	end
-
-	def currently_stocked?
-		begin
-			currently = @local_inventory.fetch(@sku)
-			currently["FBA"] == "Yes" ? true : false
-		rescue KeyError
-			return false
+		def get_sku_column_name
+			row = scan_headers
+			@sku = row.scan(/((?<=")sku|seller-sku|^sku)/).flatten[0]
 		end
+
+		def strip_trailing_comma data
+			data.gsub(/,\z/, "")
+		end
+
+		def prep_table
+			Database.create_temp_fba_table
+		end
+
+		def build_query_from_item_hash
+			@afn_inventory = "INSERT INTO #tempFBA VALUES "
+			CSV.foreach(@file, { :headers => true, :return_headers => false, :converters => :integer }) do |row|
+				@afn_inventory += "('#{row[@sku]}',3,#{total_inbound(row["afn-inbound-shipped-quantity"], row["afn-inbound-working-quantity"], row["afn-inbound-receiving-quantity"])},#{row['afn-fulfillable-quantity']},#{row['afn-unsellable-quantity']},#{row['afn-reserved-quantity']}),"
+			end
+			query = strip_trailing_comma @afn_inventory
+			Database.append_query query
+		end
+
+		def total_inbound shipped, working, receiving
+			shipped + working + receiving
+		end
+
 	end
 
 end
