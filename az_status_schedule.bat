@@ -1,2 +1,2 @@
 cd C:\Users\dlachasse\ruby_projects\fba_reconcile\
-@call rake start["_GET_AFN_INVENTORY_DATA_"]
+@call rake fba_status["_GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA_"]
