@@ -4,8 +4,9 @@ module Processor
 
 	class Status
 
-		def initialize(report_type)
+		def initialize(report_type, market)
 			@report_type = report_type
+			@market = market
 			@file = File.join("./tmp/", @report_type + ".csv")
 		end
 
@@ -14,6 +15,8 @@ module Processor
 			prep_table
 			build_query_from_item_hash
 			Database.merge_temp_and_stored_fba_table
+		rescue
+			FBAReconcile.start(@report_type, @market)
 		end
 
 		def scan_headers
@@ -36,7 +39,7 @@ module Processor
 		def build_query_from_item_hash
 			@afn_inventory = "INSERT INTO #tempFBA VALUES "
 			CSV.foreach(@file, { :headers => true, :return_headers => false, :converters => :integer }) do |row|
-				@afn_inventory += "('#{row[@sku]}',3,#{total_inbound(row["afn-inbound-shipped-quantity"], row["afn-inbound-working-quantity"], row["afn-inbound-receiving-quantity"])},#{row['afn-fulfillable-quantity']},#{row['afn-unsellable-quantity']},#{row['afn-reserved-quantity']}),"
+				@afn_inventory += "('#{row[@sku]}',#{CFG[@market]['stoneedge_id']},#{total_inbound(row["afn-inbound-shipped-quantity"], row["afn-inbound-working-quantity"], row["afn-inbound-receiving-quantity"])},#{row['afn-fulfillable-quantity']},#{row['afn-unsellable-quantity']},#{row['afn-reserved-quantity']}),"
 			end
 			query = strip_trailing_comma @afn_inventory
 			Database.append_query query
