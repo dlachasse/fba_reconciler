@@ -13,7 +13,6 @@ class Database
 
 		def send_query query
 			@client = self.connect
-			puts "RUNNING: #{query}"
 			result = @client.execute query
 			result.do
 		end
@@ -43,12 +42,13 @@ class Database
 			@query << "
 				MERGE [SE Data].[dbo].[FBA] AS TARGET
 				USING #tempFBA AS SOURCE
-				ON (TARGET.LocalSKU COLLATE Latin1_General_100_CI_AI = SOURCE.LocalSKU)
+				ON (TARGET.LocalSKU COLLATE Latin1_General_100_CI_AI = SOURCE.LocalSKU) AND (TARGET.CartID = SOURCE.CartID)
 				WHEN MATCHED THEN UPDATE
-					SET TARGET.LocalSKU = SOURCE.LocalSKU, TARGET.CartID = SOURCE.CartID, TARGET.Inbound = SOURCE.Inbound, TARGET.Fulfillable = SOURCE.Fulfillable, TARGET.Unfulfillable = SOURCE.Unfulfillable, TARGET.Reserved = SOURCE.Reserved                                WHEN NOT MATCHED BY TARGET THEN
+					SET TARGET.LocalSKU = SOURCE.LocalSKU, TARGET.CartID = SOURCE.CartID, TARGET.Inbound = SOURCE.Inbound, TARGET.Fulfillable = SOURCE.Fulfillable, TARGET.Unfulfillable = SOURCE.Unfulfillable, TARGET.Reserved = SOURCE.Reserved
+				WHEN NOT MATCHED BY TARGET THEN
 				INSERT (LocalSKU, CartID, Inbound, Fulfillable, Unfulfillable, Reserved)
 					VALUES (SOURCE.LocalSKU, SOURCE.CartID, SOURCE.Inbound, SOURCE.Fulfillable, SOURCE.Unfulfillable, SOURCE.Reserved)
-				WHEN NOT MATCHED BY SOURCE THEN DELETE;"
+				WHEN NOT MATCHED THEN DELETE;"
 			send_query @query
 		end
 		
