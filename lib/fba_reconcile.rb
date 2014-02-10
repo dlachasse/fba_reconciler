@@ -14,12 +14,11 @@ CFG = YAML::load_file(File.join(File.expand_path("./"), "config.yml"))
 
 module FBAReconcile
 
-	def self.start(report_type)
-		FBA.new(report_type)
-		process = Processor::Status.new(report_type)
+	def self.start(report_type, market)
+		p "Calling new #{report_type} for #{market}"
+		FBA.new(report_type, market)
+		process = Processor::Status.new(report_type, market)
 		process.build
-	rescue
-		start(report_type)
 	end
 
 end
