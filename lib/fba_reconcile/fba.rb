@@ -6,15 +6,16 @@ class FBA
 
 	attr_accessor :mws
 
-	def initialize(report_type)
+	def initialize(report_type, market)
 		@report_type = report_type
+		@market = market
 		start_connection
 		get_report_list
 		check_for_recent_request
 	end
 
 	def start_connection
-		connection = Request.new(:connect)
+		connection = Request.new(:connect, {market: @market} )
 		@@mws = connection.mws
 	end
 
