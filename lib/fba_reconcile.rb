@@ -14,18 +14,12 @@ CFG = YAML::load_file(File.join(File.expand_path("./"), "config.yml"))
 
 module FBAReconcile
 
-	def self.recs
-		%w(Inventory Selection Pricing Fulfillment ListingQuality).each do |cat|
-			recs = Request.new(:connect, { recommendation_category: cat })
-			data = recs.request_recommendations
-			f = File.new("./recommendations_#{cat.downcase}.xml", "w+")
-			f.puts data.to_xml(root: 'ListRecommendationsResult')
-		end
-	end
-
 	def self.start(report_type)
 		FBA.new(report_type)
-		Processor.new
+		process = Processor::Status.new(report_type)
+		process.build
+	rescue
+		start(report_type)
 	end
 
 end

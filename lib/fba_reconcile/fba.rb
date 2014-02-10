@@ -81,18 +81,28 @@ class FBA
 		write_out_file(request.report.parsed_response)
 	end
 
-	def format_data(data)
-		data.gsub!("\r\n", "\n").gsub!("\t", ",")
-	end
-
 	def write_out_file(data)
-		data = format_data(data)
-		output = File.open(File.join(File.expand_path("./tmp/"), @report_type + ".csv"), "w+")
-		output.puts data
+		output_path = File.join(File.expand_path("./tmp/"), @report_type + ".csv")
+		CSV.open(output_path, "w+", { force_quotes: true } ) do |row|
+			data.split("\r\n").each do |line|
+				row << line.split("\t")
+			end
+		end
+	rescue
+		FBA.new(@report_type)
 	end
 
 	def self.recent_report_downloaded?
 		(Time.now.utc - File.mtime(File.join(File.expand_path("./lib/"), @report_type + '.csv')).utc).to_i < 2700
+	end
+
+	def self.download_recommendations
+		%w(Inventory Selection Pricing Fulfillment ListingQuality).each do |cat|
+			recs = Request.new(:connect, { recommendation_category: cat })
+			data = recs.request_recommendations
+			f = File.new("./recommendations_#{cat.downcase}.xml", "w+")
+			f.puts data.to_xml(root: 'ListRecommendationsResult')
+		end
 	end
 
 end
