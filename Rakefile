@@ -34,10 +34,11 @@ end
 
 desc "Start logger"
 task :start_logger do
-	@output_logfile, @error_logfile = File.join("./tmp/", "output.log"), File.join("./tmp/", "error.log")
+	@output_logfile, @error_logfile = File.join(Dir.pwd, "tmp/output.log"), File.join(Dir.pwd, "tmp/error.log")
+	set_stdout
+	rotate_logs
 	$stdout = File.open(@output_logfile, "a+")
 	$stderr = File.open(@error_logfile, "a+")
-	rotate_logs
 end
 
 def check_for_config
@@ -55,7 +56,13 @@ def rotate_logs
 	files.each do |file|
 		if File.size?(file).to_i > 2
 			File.delete(file)
-			start_logger
+			Rake::Task["start_logger"].invoke
 		end
 	end
+end
+
+def set_stdout
+	STDOUT.sync = true
+	STDERR.sync = true
+	$stdout, $stderr = STDOUT, STDERR
 end
