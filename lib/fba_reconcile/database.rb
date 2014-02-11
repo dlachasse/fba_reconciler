@@ -47,8 +47,7 @@ class Database
 					SET TARGET.LocalSKU = SOURCE.LocalSKU, TARGET.CartID = SOURCE.CartID, TARGET.Inbound = SOURCE.Inbound, TARGET.Fulfillable = SOURCE.Fulfillable, TARGET.Unfulfillable = SOURCE.Unfulfillable, TARGET.Reserved = SOURCE.Reserved
 				WHEN NOT MATCHED BY TARGET THEN
 				INSERT (LocalSKU, CartID, Inbound, Fulfillable, Unfulfillable, Reserved)
-					VALUES (SOURCE.LocalSKU, SOURCE.CartID, SOURCE.Inbound, SOURCE.Fulfillable, SOURCE.Unfulfillable, SOURCE.Reserved)
-				WHEN NOT MATCHED THEN DELETE;"
+					VALUES (SOURCE.LocalSKU, SOURCE.CartID, SOURCE.Inbound, SOURCE.Fulfillable, SOURCE.Unfulfillable, SOURCE.Reserved);"
 			send_query @query
 		end
 		
