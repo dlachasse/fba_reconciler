@@ -1,29 +1,5 @@
-# FbaReconcile
+# FBA Reconciler
 
-TODO: Write a gem description
+This project downloads Amazon Merchant reports via Amazon’s Marketplace Web Service API. This is really only intended for internal use and includes static values that only apply to our config file.Note that the `Database` class is intended to utilize the TinyTDS library for interacting with SQL Server. You can feel free to customize as needed.
 
-## Installation
-
-Add this line to your application's Gemfile:
-
-    gem 'fba_reconcile'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install fba_reconcile
-
-## Usage
-
-TODO: Write usage instructions here
-
-## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+Batch files are included for scheduling tasks.
