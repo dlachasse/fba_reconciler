@@ -2,9 +2,7 @@ require "bundler/gem_tasks"
 require_relative "lib/fba_reconcile"
 
 desc "Download current AZ info from all marketplaces and imports into database"
-task :fba_status, :type do |t, args|
-	type = args[:type]
-	start_logger
+task :fba, :type do |t, args|
 	%w(hive blank uk).each do |market|
 		FBAReconcile.start(type, market, true)
 	end
@@ -12,7 +10,6 @@ end
 
 desc "Download report for specified marketplace"
 task :download_report, :type, :market do |t, args|
-	start_logger
 	FBAReconcile.start(args[:type], args[:market])
 end
 
@@ -21,6 +18,24 @@ task :recs do
 	FBA.download_recommendations
 end
 
-def start_logger
-	$stdout = File.open(File.join("./", "output.log"), "a+")
+desc "Setup project directory"
+task :setup do
+	sh "mkdir tmp"
+	abort unless check_for_config
+end
+
+desc "Run FBA update"
+task :update_fba_status, :type do |t, args|
+	Rake::Task["start_logger"].invoke
+	Rake::Task["setup"].invoke
+	Rake::Task["fba"].invoke type: args[:type]
+end
+
+desc "Start logger"
+task :start_logger do
+	$stdout = File.open(File.join("./tmp/", "output.log"), "a+")
+end
+
+def check_for_config
+	File.exist?("./config.yml")
 end
