@@ -33,9 +33,18 @@ end
 
 desc "Start logger"
 task :start_logger do
+	rotate_logs
 	$stdout = File.open(File.join("./tmp/", "output.log"), "a+")
 end
 
 def check_for_config
 	File.exist?("./config.yml")
+end
+
+def rotate_logs
+	output_path = File.join("./tmp/", "output.log")
+	if File.size?(output_path).to_i > 2
+		File.delete(output_path)
+		start_logger
+	end
 end
