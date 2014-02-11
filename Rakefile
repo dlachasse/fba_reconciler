@@ -54,7 +54,7 @@ end
 def rotate_logs
 	files = log_files
 	files.each do |file|
-		if File.size?(file).to_i > 2
+		if File.size?(file).to_f / 2**20 > 2
 			File.delete(file)
 			Rake::Task["start_logger"].invoke
 		end
