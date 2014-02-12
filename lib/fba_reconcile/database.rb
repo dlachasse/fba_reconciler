@@ -27,11 +27,6 @@ class Database
 				[Reserved] [smallint] NULL);"
 		end
 
-		def drop_temp_fba_table
-			@query = "DROP TABLE #tempFBA"
-			send_query query
-		end
-
 		def append_query query
 			@query ||= ""
 			@query << query
