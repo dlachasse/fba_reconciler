@@ -35,7 +35,6 @@ class Database
 		def merge_temp_and_stored_fba_table
 			@query ||= ""
 			@query << "
-				DECLARE @T TABLE(LocalSKU VARCHAR(255), CartID INT);
 				MERGE [SE Data].[dbo].[FBA] AS TARGET
 				USING #tempFBA AS SOURCE
 				ON (TARGET.LocalSKU COLLATE Latin1_General_100_CI_AI = SOURCE.LocalSKU) AND (TARGET.CartID = SOURCE.CartID)
@@ -44,14 +43,7 @@ class Database
 					SET TARGET.LocalSKU = SOURCE.LocalSKU, TARGET.CartID = SOURCE.CartID, TARGET.Inbound = SOURCE.Inbound, TARGET.Fulfillable = SOURCE.Fulfillable, TARGET.Unfulfillable = SOURCE.Unfulfillable, TARGET.Reserved = SOURCE.Reserved
 				WHEN NOT MATCHED BY TARGET 
 					THEN INSERT (LocalSKU, CartID, Inbound, Fulfillable, Unfulfillable, Reserved)
-					VALUES (SOURCE.LocalSKU, SOURCE.CartID, SOURCE.Inbound, SOURCE.Fulfillable, SOURCE.Unfulfillable, SOURCE.Reserved)
-				WHEN NOT MATCHED BY SOURCE 
-					THEN DELETE
-				OUTPUT SOURCE.LocalSKU, SOURCE.CartID INTO @T;
-								
-				DELETE FROM [SE Data].[dbo].[FBA]
-				WHERE NOT EXISTS (SELECT LocalSKU, CartID
-					FROM @T)"
+					VALUES (SOURCE.LocalSKU, SOURCE.CartID, SOURCE.Inbound, SOURCE.Fulfillable, SOURCE.Unfulfillable, SOURCE.Reserved);"
 			send_query @query
 		end
 		
