@@ -97,9 +97,9 @@ class FBA
 		(Time.now.utc - File.mtime(File.join(File.expand_path("./lib/"), @report_type + '.csv')).utc).to_i < 2700
 	end
 
-	def self.download_recommendations
+	def self.download_recommendations market
 		%w(Inventory Selection Pricing Fulfillment ListingQuality).each do |cat|
-			recs = Request.new(:connect, { recommendation_category: cat })
+			recs = Request.new(:connect, { market: market, recommendation_category: cat })
 			data = recs.request_recommendations
 			f = File.new("./recommendations_#{cat.downcase}.xml", "w+")
 			f.puts data.to_xml(root: 'ListRecommendationsResult')

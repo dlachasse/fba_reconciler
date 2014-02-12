@@ -14,8 +14,8 @@ task :download_report, :type, :market do |t, args|
 end
 
 desc "Get recs"
-task :recs do
-	FBA.download_recommendations
+task :recs, :market do |t, args|
+	FBA.download_recommendations args[:market]
 end
 
 desc "Setup project directory"
